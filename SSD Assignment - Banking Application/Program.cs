@@ -1,14 +1,87 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.DirectoryServices.AccountManagement;
+using System.Security.Principal;
+
 
 namespace Banking_Application
 {
     public class Program
     {
+
+        private static bool AuthenticateUser(out bool isAdmin, out string username)
+        {
+            isAdmin = false;
+            username = "";
+
+            Console.Write("Username: ");
+            string inputUsername = Console.ReadLine();
+
+            Console.Write("Password: ");
+            string inputPassword = Console.ReadLine();
+
+            string domainName = "ITSLIGO.LAN";
+
+            using (PrincipalContext context = new PrincipalContext(ContextType.Domain, domainName))
+            {
+                bool validCredentials = context.ValidateCredentials(inputUsername, inputPassword);
+
+                if (!validCredentials)
+                {
+                    Console.WriteLine("Invalid credentials.");
+                    return false;
+                }
+
+                UserPrincipal user = UserPrincipal.FindByIdentity(
+                    context,
+                    IdentityType.SamAccountName,
+                    inputUsername);
+
+
+                if (user == null)
+                {
+                    Console.WriteLine("User not found in Active Directory.");
+                    return false;
+                }
+
+                bool isTeller = user.IsMemberOf(
+                    context,
+                    IdentityType.SamAccountName,
+                    "Bank Teller"
+                    );
+
+                if (!isTeller)
+                {
+                    Console.WriteLine("User is not authorisded to use this application.");
+                    return false;
+                }
+
+                isAdmin = user.IsMemberOf(
+                    context,
+                    IdentityType.SamAccountName,
+                    "Bank Teller Admin"
+                    );
+
+                username = inputUsername;
+                return true;
+            }
+        }
         public static void Main(string[] args)
         {
-            
+
+            bool isAdmin; ;
+            string loggedInUser;
+
+            bool authenticated = AuthenticateUser(out isAdmin, out loggedInUser);
+
+            if (!authenticated)
+            {
+                Console.WriteLine("Authentication failed. Exiting application.");
+                return;
+            }
+            Console.WriteLine($"Welcome {loggedInUser}");
+
             Data_Access_Layer dal = Data_Access_Layer.getInstance();
             dal.loadBankAccounts();
             bool running = true;
@@ -73,7 +146,7 @@ namespace Banking_Application
                         {
 
                             if (loopCount > 0)
-                                Console.WriteLine("INVALID ÀDDRESS LINE 1 ENTERED - PLEASE TRY AGAIN");
+                                Console.WriteLine("INVALID ADDRESS LINE 1 ENTERED - PLEASE TRY AGAIN");
 
                             Console.WriteLine("Enter Address Line 1: ");
                             addressLine1 = Console.ReadLine();
@@ -234,7 +307,7 @@ namespace Banking_Application
                         break;
                     case "3":
                         Console.WriteLine("Enter Account Number: ");
-                        accNo = Console.ReadLine();
+                        accNo = Console.ReadLine(); 
 
                         ba = dal.findBankAccountByAccNo(accNo);
 
