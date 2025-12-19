@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
+using SSD_Assignment___Banking_Application;
 
 namespace Banking_Application
 {
@@ -12,12 +13,12 @@ namespace Banking_Application
     {
 
         private List<Bank_Account> accounts;
-        public static String databaseName = "Banking Database.db";
+        public static String databaseName = "Banking Database.db"; 
         private static Data_Access_Layer instance = new Data_Access_Layer();
 
         private Data_Access_Layer()//Singleton Design Pattern (For Concurrency Control) - Use getInstance() Method Instead.
         {
-            accounts = new List<Bank_Account>();
+            accounts = new List<Bank_Account>(); 
         }
 
         public static Data_Access_Layer getInstance()
@@ -43,10 +44,10 @@ namespace Banking_Application
             using (var connection = getDatabaseConnection())
             {
                 connection.Open();
-                var command = connection.CreateCommand();
-                command.CommandText =
+                var command = connection.CreateCommand(); 
+                command.CommandText = 
                 @"
-                    CREATE TABLE IF NOT EXISTS Bank_Accounts(    
+                    CREATE TABLE IF NOT EXISTS Bank_Accounts(     
                         accountNo TEXT PRIMARY KEY,
                         name TEXT NOT NULL,
                         address_line_1 TEXT,
@@ -76,7 +77,7 @@ namespace Banking_Application
                 {
                     connection.Open();
                     var command = connection.CreateCommand();
-                    command.CommandText = "SELECT * FROM Bank_Accounts";
+                    command.CommandText = "SELECT * FROM Bank_Accounts"; 
                     SqliteDataReader dr = command.ExecuteReader();
                     
                     while(dr.Read())
@@ -86,26 +87,36 @@ namespace Banking_Application
 
                         if(accountType == Account_Type.Current_Account)
                         {
-                            Current_Account ca = new Current_Account();
+                            Current_Account ca = new Current_Account(); 
                             ca.accountNo = dr.GetString(0);
-                            ca.name = dr.GetString(1);
-                            ca.address_line_1 = dr.GetString(2);
-                            ca.address_line_2 = dr.GetString(3);
-                            ca.address_line_3 = dr.GetString(4);
-                            ca.town = dr.GetString(5);
-                            ca.balance = dr.GetDouble(6);
+                          /*ca.name = dr.GetString(1); //Need to Encrypt
+                            ca.address_line_1 = dr.GetString(2); //Need to Encrypt
+                            ca.address_line_2 = dr.GetString(3); //Need to Encrypt
+                            ca.address_line_3 = dr.GetString(4); // Need to Encrypt 
+                            ca.town = dr.GetString(5); //Need to Encrypt */
+                            ca.name = EncryptionHelper.Decrypt(dr.GetString(1));
+                            ca.address_line_1 = EncryptionHelper.Decrypt(dr.GetString(2));
+                            ca.address_line_2 = EncryptionHelper.Decrypt(dr.GetString(3));
+                            ca.address_line_3 = EncryptionHelper.Decrypt(dr.GetString(4));
+                            ca.town = EncryptionHelper.Decrypt(dr.GetString(5));
+                            ca.balance = dr.GetDouble(6); 
                             ca.overdraftAmount = dr.GetDouble(8);
                             accounts.Add(ca);
                         }
                         else
                         {
-                            Savings_Account sa = new Savings_Account();
+                            Savings_Account sa = new Savings_Account(); 
                             sa.accountNo = dr.GetString(0);
-                            sa.name = dr.GetString(1);
-                            sa.address_line_1 = dr.GetString(2);
-                            sa.address_line_2 = dr.GetString(3);
-                            sa.address_line_3 = dr.GetString(4);
-                            sa.town = dr.GetString(5);
+                            /*sa.name = dr.GetString(1); //Need to Encrypt
+                              sa.address_line_1 = dr.GetString(2); //Need to Encrypt
+                              sa.address_line_2 = dr.GetString(3); //Need to Encrypt
+                              sa.address_line_3 = dr.GetString(4); // Need to Encrypt
+                              sa.town = dr.GetString(5); //Need to Encrypt */
+                            sa.name = EncryptionHelper.Decrypt(dr.GetString(1));
+                            sa.address_line_1 = EncryptionHelper.Decrypt(dr.GetString(2));
+                            sa.address_line_2 = EncryptionHelper.Decrypt(dr.GetString(3));
+                            sa.address_line_3 = EncryptionHelper.Decrypt(dr.GetString(4));
+                            sa.town = EncryptionHelper.Decrypt(dr.GetString(5));
                             sa.balance = dr.GetDouble(6);
                             sa.interestRate = dr.GetDouble(9);
                             accounts.Add(sa);
@@ -135,20 +146,27 @@ namespace Banking_Application
                 var command = connection.CreateCommand();
                 command.CommandText =
                 @"
-                    INSERT INTO Bank_Accounts VALUES(" +
+                    INSERT INTO Bank_Accounts VALUES(" + //Violates PII Data Handling best practice. - Storing PII Data in Plain Text.
                     "'" + ba.accountNo + "', " +
-                    "'" + ba.name + "', " +
-                    "'" + ba.address_line_1 + "', " +
-                    "'" + ba.address_line_2 + "', " +
-                    "'" + ba.address_line_3 + "', " +
-                    "'" + ba.town + "', " +
-                    ba.balance + ", " +
-                    (ba.GetType() == typeof(Current_Account) ? 1 : 2) + ", ";
+                   /* "'" + ba.name + "', " + // Need to Encrypt
+                    "'" + ba.address_line_1 + "', " + // Need to Encrypt
+                    "'" + ba.address_line_2 + "', " + // Need to Encrypt
+                    "'" + ba.address_line_3 + "', " +// Need to Encrypt
+                    "'" + ba.town + "', " + // Need to Encrypt */
+                   //Changes
+                    "'" + EncryptionHelper.Encrypt(ba.name) + "', " +
+                    "'" + EncryptionHelper.Encrypt(ba.address_line_1) + "', " +
+                    "'" + EncryptionHelper.Encrypt(ba.address_line_2) + "', " +
+                    "'" + EncryptionHelper.Encrypt(ba.address_line_3) + "', " +
+                    "'" + EncryptionHelper.Encrypt(ba.town) + "', " +
 
-                if (ba.GetType() == typeof(Current_Account))
+                    ba.balance + ", " +
+                    (ba.GetType() == typeof(Current_Account) ? 1 : 2) + ", "; 
+
+                if (ba.GetType() == typeof(Current_Account)) 
                 {
                     Current_Account ca = (Current_Account)ba;
-                    command.CommandText += ca.overdraftAmount + ", NULL)";
+                    command.CommandText += ca.overdraftAmount + ", NULL)"; 
                 }
 
                 else
@@ -225,7 +243,7 @@ namespace Banking_Application
             foreach (Bank_Account ba in accounts)
             {
 
-                if (ba.accountNo.Equals(accNo))
+                if (ba.accountNo.Equals(accNo)) 
                 {
                     ba.lodge(amountToLodge);
                     toLodgeTo = ba;
@@ -243,7 +261,7 @@ namespace Banking_Application
                 {
                     connection.Open();
                     var command = connection.CreateCommand();
-                    command.CommandText = "UPDATE Bank_Accounts SET balance = " + toLodgeTo.balance + " WHERE accountNo = '" + toLodgeTo.accountNo + "'";
+                    command.CommandText = "UPDATE Bank_Accounts SET balance = " + toLodgeTo.balance + " WHERE accountNo = '" + toLodgeTo.accountNo + "'"; 
                     command.ExecuteNonQuery();
 
                 }
@@ -253,7 +271,7 @@ namespace Banking_Application
 
         }
 
-        public bool withdraw(String accNo, double amountToWithdraw)
+        public bool withdraw(String accNo, double amountToWithdraw) 
         {
 
             Bank_Account toWithdrawFrom = null;
@@ -280,7 +298,7 @@ namespace Banking_Application
                 {
                     connection.Open();
                     var command = connection.CreateCommand();
-                    command.CommandText = "UPDATE Bank_Accounts SET balance = " + toWithdrawFrom.balance + " WHERE accountNo = '" + toWithdrawFrom.accountNo + "'";
+                    command.CommandText = "UPDATE Bank_Accounts SET balance = " + toWithdrawFrom.balance + " WHERE accountNo = '" + toWithdrawFrom.accountNo + "'"; 
                     command.ExecuteNonQuery();
 
                 }
