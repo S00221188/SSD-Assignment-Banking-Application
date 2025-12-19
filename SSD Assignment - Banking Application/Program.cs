@@ -19,8 +19,33 @@ namespace Banking_Application
             Console.Write("Username: ");
             string inputUsername = Console.ReadLine();
 
+            // Referenced code for password masking
+            // Source: Stack Overflow
+            // https://stackoverflow.com/questions/3404421/password-masking-console-application
+            // Author: Mohammad Nadeem, modified by community. See post 'Timeline' for change history
+            // Retrieved: 2025-12-19, License - CC BY-SA 3.0
             Console.Write("Password: ");
-            string inputPassword = Console.ReadLine();
+            string inputPassword = "";
+            ConsoleKeyInfo key;
+
+            do
+            {
+                key = Console.ReadKey(true);
+
+                if (key.Key == ConsoleKey.Backspace && inputPassword.Length > 0)
+                {
+                    inputPassword = inputPassword[..^1];
+                    Console.Write("\b \b"); // remove last *
+                }
+                else if (!char.IsControl(key.KeyChar))
+                {
+                    inputPassword += key.KeyChar;
+                    Console.Write("*");
+                }
+
+            } while (key.Key != ConsoleKey.Enter);
+
+            Console.WriteLine();
 
             string domainName = "ITSLIGO.LAN";
 
