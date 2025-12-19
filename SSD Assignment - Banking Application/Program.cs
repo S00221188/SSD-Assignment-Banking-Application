@@ -61,7 +61,7 @@ namespace Banking_Application
                 isAdmin = user.IsMemberOf(
                     context,
                     IdentityType.SamAccountName,
-                    "Bank Teller Admin"
+                    "Bank Teller Administrator"
                     );
 
                 username = inputUsername;
@@ -71,7 +71,7 @@ namespace Banking_Application
         public static void Main(string[] args)
         {
 
-            bool isAdmin; ;
+            bool isAdmin;
             string loggedInUser;
 
             bool authenticated = AuthenticateUser(out isAdmin, out loggedInUser);
@@ -100,17 +100,17 @@ namespace Banking_Application
                 Console.WriteLine("6. Exit");
                 Console.WriteLine("CHOOSE OPTION:");
                 String option = Console.ReadLine();
-                
+
                 switch(option)
                 {
                     case "1":
                         String accountType = "";
                         int loopCount = 0;
-                        
+
                         do
                         {
 
-                           if(loopCount > 0)
+                            if(loopCount > 0)
                                 Console.WriteLine("INVALID OPTION CHOSEN - PLEASE TRY AGAIN");
 
                             Console.WriteLine("");
@@ -158,7 +158,7 @@ namespace Banking_Application
 
                         Console.WriteLine("Enter Address Line 2: ");
                         String addressLine2 = Console.ReadLine();
-                        
+
                         Console.WriteLine("Enter Address Line 3: ");
                         String addressLine3 = Console.ReadLine();
 
@@ -195,7 +195,7 @@ namespace Banking_Application
                                 balance = Convert.ToDouble(balanceString);
                             }
 
-                            catch 
+                            catch
                             {
                                 loopCount++;
                             }
@@ -264,7 +264,7 @@ namespace Banking_Application
                         }
 
                         String accNo = dal.addBankAccount(ba);
-                        EventLog.WriteEntry("Banking Application",$"{loggedInUser}added account {accNo}",EventLogEntryType.Information);
+                        EventLog.WriteEntry("Application", $"[Banking App]{loggedInUser}added account {accNo}", EventLogEntryType.Information);
 
                         Console.WriteLine("New Account Number Is: " + accNo);
 
@@ -294,7 +294,7 @@ namespace Banking_Application
                             do
                             {
 
-                                Console.WriteLine("Proceed With Delection (Y/N)?"); 
+                                Console.WriteLine("Proceed With Delection (Y/N)?");
                                 ans = Console.ReadLine();
 
                                 switch (ans)
@@ -302,7 +302,7 @@ namespace Banking_Application
                                     case "Y":
                                     case "y": dal.closeBankAccount(accNo);
 
-                                        EventLog.WriteEntry("Banking Application",$"{loggedInUser}closed account {accNo}",EventLogEntryType.Information);
+                                        EventLog.WriteEntry("Application", $"[BankingApp]{loggedInUser}closed account {accNo}", EventLogEntryType.Information);
                                         break;
                                     case "N":
                                     case "n":
@@ -317,11 +317,11 @@ namespace Banking_Application
                         break;
                     case "3":
                         Console.WriteLine("Enter Account Number: ");
-                        accNo = Console.ReadLine(); 
+                        accNo = Console.ReadLine();
 
                         ba = dal.findBankAccountByAccNo(accNo);
 
-                        if(ba is null) 
+                        if(ba is null)
                         {
                             Console.WriteLine("Account Does Not Exist");
                         }
@@ -343,7 +343,7 @@ namespace Banking_Application
                         }
                         else
                         {
-                            EventLog.WriteEntry("Banking Application",$"{loggedInUser}lodged to account {accNo}",EventLogEntryType.Information);
+                            EventLog.WriteEntry("Application", $"[BankingApp]{loggedInUser}lodged to account {accNo}", EventLogEntryType.Information);
                             double amountToLodge = -1;
                             loopCount = 0;
 
@@ -411,7 +411,7 @@ namespace Banking_Application
 
                             if(withdrawalOK)
                             {
-                                EventLog.WriteEntry("Banking Application",$"{loggedInUser}withdrew from account {accNo}",EventLogEntryType.Information);
+                                EventLog.WriteEntry("Application", $"[BankingApp]{loggedInUser}withdrew from account {accNo}", EventLogEntryType.Information);
                             }
                             else
                             {
@@ -422,12 +422,12 @@ namespace Banking_Application
                     case "6":
                         running = false;
                         break;
-                    default:    
+                    default:
                         Console.WriteLine("INVALID OPTION CHOSEN - PLEASE TRY AGAIN");
                         break;
                 }
-                
-                
+
+
             } while (running != false);
 
         }
