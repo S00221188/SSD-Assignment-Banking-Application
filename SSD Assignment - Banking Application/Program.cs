@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.DirectoryServices.AccountManagement;
 using System.Security.Principal;
+using System.Diagnostics;
 
 
 namespace Banking_Application
@@ -263,11 +264,18 @@ namespace Banking_Application
                         }
 
                         String accNo = dal.addBankAccount(ba);
+                        EventLog.WriteEntry("Banking Application",$"{loggedInUser}added account {accNo}",EventLogEntryType.Information);
 
                         Console.WriteLine("New Account Number Is: " + accNo);
 
                         break;
                     case "2":
+
+                        if (!isAdmin)
+                        {
+                            Console.WriteLine("You do not have permission to close bank accounts.");
+                            break;
+                        }
                         Console.WriteLine("Enter Account Number: ");
                         accNo = Console.ReadLine();
 
@@ -293,6 +301,8 @@ namespace Banking_Application
                                 {
                                     case "Y":
                                     case "y": dal.closeBankAccount(accNo);
+
+                                        EventLog.WriteEntry("Banking Application",$"{loggedInUser}closed account {accNo}",EventLogEntryType.Information);
                                         break;
                                     case "N":
                                     case "n":
@@ -333,6 +343,7 @@ namespace Banking_Application
                         }
                         else
                         {
+                            EventLog.WriteEntry("Banking Application",$"{loggedInUser}lodged to account {accNo}",EventLogEntryType.Information);
                             double amountToLodge = -1;
                             loopCount = 0;
 
@@ -398,9 +409,12 @@ namespace Banking_Application
 
                             bool withdrawalOK = dal.withdraw(accNo, amountToWithdraw);
 
-                            if(withdrawalOK == false)
+                            if(withdrawalOK)
                             {
-
+                                EventLog.WriteEntry("Banking Application",$"{loggedInUser}withdrew from account {accNo}",EventLogEntryType.Information);
+                            }
+                            else
+                            {
                                 Console.WriteLine("Insufficient Funds Available.");
                             }
                         }
